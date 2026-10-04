@@ -78,7 +78,7 @@ references-lean/
   notes/md/  notes/tex/     # the human-readable notes
   oracle/                   # Python numerical oracle (uv venv) + tests
   scripts/                  # check_env.sh, guards, gemini helper
-  tests/canary/{good,bad}/  # guard self-tests
+  tests/                    # generic tests, LockTest files, and canary guard self-tests
 ```
 
 ## 5. Quickstart
