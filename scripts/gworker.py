@@ -59,7 +59,7 @@ Hard rules (violations are detected automatically and the task FAILS):
 - You may only write the files allowed by the task. Keep files complete (write_file overwrites).
 - Lean toolchain is pinned (Lean 4.35, recent Mathlib). Mathlib paths: Mathlib/Algebra/Polynomial/*,
   Mathlib/Algebra/MvPolynomial/*, etc. (not Mathlib/Data/Polynomial).
-- Work in small steps: write, lean_check, fix. When the acceptance criterion should pass, call
+- FOCUS ON YOUR GOAL FIRST. Do not read unrelated files or other tasks. Write the code requested immediately. Work in small steps: write, lean_check, fix. When the acceptance criterion should pass, call
   finish(summary). finish runs the acceptance command; if it fails you get the output and continue.
 - Be economical: tool outputs are truncated; avoid dumping huge files.
 """
