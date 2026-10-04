@@ -141,14 +141,8 @@ class Worker:
 
     def t_grep_mathlib(self, pattern, path_glob=None):
         base = ROOT / ".lake/packages/mathlib" / (path_glob or "Mathlib")
-        try:
-            p = subprocess.run(["rg", "-n", "--max-count", "5", "-e", pattern, str(base)], capture_output=True, text=True, timeout=120)
-            out = p.stdout.replace(str(ROOT / ".lake/packages/mathlib") + "/", "")
-        except FileNotFoundError:
-            p = subprocess.run(["grep", "-rnE", pattern, str(base)], capture_output=True, text=True, timeout=120)
-            out = p.stdout.replace(str(ROOT / ".lake/packages/mathlib") + "/", "")
-        lines = out.splitlines()
-        return "\n".join(lines[:40]) + (f"\n... {len(lines) - 40} more" if len(lines) > 40 else "") or "no matches"
+        code, out = run(f"grep -rnE '{pattern}' {base} | head -40")
+        return out.replace(str(ROOT / ".lake/packages/mathlib") + "/", "") or "no matches"
 
     def t_shell(self, cmd, cwd=None):
         c = cmd.strip()

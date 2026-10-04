@@ -1,0 +1,1 @@
+{"id": "A7", "status": "BLOCKED", "model_final": "gemini-3.8-flash", "escalated": false, "turns": 25, "tokens_in": 339161, "tokens_out": 19672, "est_cost_brl": 1.28, "failed_finishes": 0, "summary": "max_turns reached. Last error: ", "finished_at": "2026-10-04T01:49:08.106075+00:00"}
