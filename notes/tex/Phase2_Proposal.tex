@@ -26,92 +26,83 @@
 \maketitle
 
 \section{Phase 2 Scope Constraints}
-Based on the Phase 2 directives and critiques, this phase is strictly limited to the formulation of the Bosonization Dictionary's density sector. Klein factors, Mattis-Mandelstam, and Luttinger interaction are deferred to subsequent phases. This document exactly mirrors the required Lean 4 stubs in \texttt{Bosonize/Stubs/Phase2\_Stubs.lean}.
+Based on the revised Phase 2 directives, this phase formulates the Bosonization Dictionary's density sector. It explicitly excludes Klein factors to prevent context bloat. The mathematical specifications define normal-ordered densities, the exact Schwinger term on bounded energy submodules, the scaled Sugawara Hamiltonian mapping to the free fermion Hamiltonian, and Haldane Completeness via integer partitions.
 
 \section{2.1 Density Operators}
-We define the density modes as the Fourier transform of the normal-ordered fermion density. Normal ordering subtracts the macroscopic vacuum expectation value to keep the operator finite on the budget subspace.
+The raw density is the sum of $c^\dagger_{q+m} c_q$. We normal-order it relative to the Dirac sea to prevent infinite eigenvalues.
 
 \begin{lstlisting}[language=lean]
 section Densities
 
-/-- The raw density operator \rho(m) = \sum c^\dagger_{q+m} c_q -/
-def density_mode (m : LambdaDual L) : Module.End Complex (FockSpace (Chirality x LambdaDual L)) := 
-  -- Note to Blue Team: implement using Finset.sum over q in LambdaDual
-  sorry
+/-- The raw density operator \rho(m) = \sum c^\dagger_{q+m} c_q. -/
+def raw_density (m : LambdaDual L) : Module.End Complex (FockSpace (Chirality x LambdaDual L)) :=
+  \sum q : LambdaDual L, (c_mom L (q + m)) * (c_mom L q)^\dagger 
 
-/-- Vacuum expectation value of the density mode -/
+/-- Vacuum expectation value of the density mode: \langle 0| \rho(m) |0 \rangle -/
 def density_vev (m : LambdaDual L) : Complex :=
-  -- Tr( |0><0| \rho(m) )
-  sorry
+  if m.val = 0 then (L / 2 : Complex) else 0
 
 /-- Normal ordered density mode :\rho(m): -/
-def no_density_mode (m : LambdaDual L) : Module.End Complex (FockSpace (Chirality x LambdaDual L)) :=
-  density_mode m - LinearMap.smulRight (LinearMap.id) (density_vev m)
+def density_mode (m : LambdaDual L) : Module.End Complex (FockSpace (Chirality x LambdaDual L)) :=
+  raw_density m - LinearMap.smulRight (LinearMap.id) (density_vev m)
 
-/-- The zero mode of the normal ordered density is exactly the particle number shift -/
-lemma no_density_zero_eq_N : 
-  no_density_mode 0 = N_op := sorry
+/-- The zero mode of the normal ordered density is exactly the particle number operator N. -/
+lemma density_zero_eq_N : 
+  density_mode (0 : LambdaDual L) = N_op := sorry
 
 end Densities
 \end{lstlisting}
 
-\section{2.2 Heisenberg Algebra on the Budget Subspace}
-The Schwinger term arises algebraically. The commutator is evaluated strictly on the finite Energy Budget Subspace $\mathcal{B}_{K, N_{max}}$ to rigorously avoid infinite limits and domain issues.
+\section{2.2 Heisenberg Algebra (Schwinger Term)}
+The commutator yields the Schwinger term when momenta are equal and opposite ($m+n=0$), constrained strictly on the budget subspace.
 
 \begin{lstlisting}[language=lean]
-section HeisenbergCCR
+section Schwinger
 
-/-- 
-  The Exact Schwinger Term on the Budget Subspace.
-  Requires the momentum modes m, n to be small enough such that they do not 
-  excite states out of the finite band L when acting on a state in the budget K.
--/
-lemma comm_no_density_modes {K Nmax : Nat} {m n : LambdaDual L} 
-  (h_band : (m.val : Int) + (n.val : Int) + K < L / 2) :
-  \forall (\psi : BudgetSpace L K Nmax), 
-    (no_density_mode m * no_density_mode n - no_density_mode n * no_density_mode m) \psi.val = 
-    (if m.val + n.val = 0 then (m.val : Complex) else 0) \bullet \psi.val := sorry
+/-- The Exact Schwinger Term evaluated strictly on the Budget Subspace. -/
+lemma comm_density_modes {K Nmax : Nat} {m n : LambdaDual L} 
+  (h_band : |m.val| + |n.val| + K \le L / 2) (\psi : BudgetSpace L K Nmax) :
+  (density_mode m * density_mode n - density_mode n * density_mode m) \psi.val =
+  (if m.val + n.val = 0 then (m.val : Complex) else 0) \bullet \psi.val := sorry
 
-end HeisenbergCCR
+end Schwinger
 \end{lstlisting}
 
-\section{2.3 Sugawara Construction}
-The construction of the bosonic kinetic energy operator. On the budget subspace, this is rigorously proven equivalent to the free linearized fermionic Hamiltonian.
+\section{2.3 Sugawara Construction (Kinetic Energy)}
+The free fermionic Hamiltonian $H_0$ is algebraically identical to the bosonic kinetic energy operator $H_{sug}$ on the budget subspace.
 
 \begin{lstlisting}[language=lean]
 section Sugawara
 
-/-- The bosonic kinetic energy operator -/
-def sugawara_op : Module.End Complex (FockSpace (Chirality x LambdaDual L)) :=
-  \sum m in (Finset.filter (fun x : LambdaDual L => (x.val : Int) > 0) Finset.univ),
-    no_density_mode (-m) * no_density_mode m
+/-- The Free Fermion Hamiltonian (linearized dispersion) -/
+def H_free : Module.End Complex (FockSpace (Chirality x LambdaDual L)) :=
+  \sum k : LambdaDual L, (k.val : Complex) \bullet (c_mom L k * (c_mom L k)^\dagger - LinearMap.smulRight (LinearMap.id) (if k.val \le 0 then 1 else 0))
 
-/-- 
-  The free fermion Hamiltonian equals the Sugawara bosonic Hamiltonian 
-  on the budget subspace, up to the zero-mode energy shift.
--/
-lemma sugawara_equivalence {K Nmax : Nat} (h_band : K < L / 4) :
-  \forall (\psi : BudgetSpace L K Nmax),
-    -- H_0 \psi = (H_sug + N(N+1)/2) \psi
-    sorry
+/-- The Bosonic Kinetic Energy Operator (Sugawara Hamiltonian) -/
+def H_sugawara : Module.End Complex (FockSpace (Chirality x LambdaDual L)) :=
+  \sum m in (univ.filter (fun (x : LambdaDual L) => x.val > 0)), 
+    density_mode (-m) * density_mode m
+
+/-- Sugawara Equivalence -/
+lemma sugawara_equivalence {K Nmax : Nat} (h_band : K \le L / 4) (\psi : BudgetSpace L K Nmax) :
+  H_sugawara \psi.val = (H_free - LinearMap.smulRight (LinearMap.id) ((N_op * (N_op + LinearMap.id)) / 2)) \psi.val := sorry
 
 end Sugawara
 \end{lstlisting}
 
 \section{2.4 Haldane Completeness}
-Proving that the set of states generated by acting with arbitrary polynomials of $\rho(-m)$ forms a complete basis for the budget subspace via integer partition counts.
-
 \begin{lstlisting}[language=lean]
 section Completeness
 
-/-- 
-  Dimension count showing that the number of linearly independent states 
-  generated by \rho(-m) matches the dimension of the fixed-N budget subspace, 
-  proving that the bosons completely span the fermionic degrees of freedom.
--/
-lemma haldane_completeness {K N : Nat} (h_band : K < L / 4) :
-  Module.finrank Complex (sorry : Submodule Complex (FockSpace (Chirality x LambdaDual L))) = 
-  Nat.Partition.partitions K := sorry
+/-- The cyclic Submodule generated by the negative density modes acting on the vacuum state. -/
+def density_cyclic_submodule (K Nmax : Nat) : Submodule Complex (FockSpace (Chirality x LambdaDual L)) :=
+  Submodule.span Complex (Set.range (fun (p : MvPolynomial (Fin K) Complex) => 
+    sorry -- Yellow Team Note: Implement the evaluation of the multivariate polynomial of density operators here.
+  ))
+
+/-- Haldane Completeness -/
+lemma haldane_completeness {K Nmax : Nat} (h_band : K \le L / 4) :
+  Module.finrank Complex (density_cyclic_submodule K Nmax) = Nat.Partition.partitions K := sorry
 
 end Completeness
 \end{lstlisting}

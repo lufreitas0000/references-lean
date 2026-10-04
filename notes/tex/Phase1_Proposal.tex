@@ -51,7 +51,7 @@ lemma sum_fwdDiff_eq_bounds (f : Int -> R) (a b : Int) (hab : a <= b) :
   \sum x \in Ico a b, fwdDiff f x = f b - f a := sorry
 
 lemma sum_by_parts_Lambda (f g : Lambda L -> R) :
-  \sum x : Lambda L, fwdDiff f x * g x = - \sum x : Lambda L, f x * bwdDiff g x := sorry
+  \sum x : Lambda L, fwdDiff f x * g x = - \sum x : Lambda L, shiftE f x * fwdDiff g x := sorry
 
 def umbralBeta (f : Int -> R) : Int -> R := fun x => (x : R) * f (x - 1)
 lemma umbral_heisenberg (f : Int -> R) (x : Int) :
@@ -64,10 +64,10 @@ Fourier modes on the periodic lattice.
 def plane_wave (k : LambdaDual L) (x : Lambda L) : Complex :=
   \zeta ^ ((k : Int) * (x.val : Int))
 
-lemma fwdDiff_plane_wave (k : LambdaDual L) (x : Lambda L) :
+lemma fwdDiff_plane_wave (hz : \zeta \neq 0) (k : LambdaDual L) (x : Lambda L) :
   fwdDiff (fun z => \zeta ^ ((k : Int) * z)) x.val = (\zeta ^ (k : Int) - 1) * plane_wave \zeta k x := sorry
 
-lemma plane_wave_ortho (k k' : LambdaDual L) :
+lemma plane_wave_ortho (hz : \zeta \neq 0) (k k' : LambdaDual L) :
   \sum x : Lambda L, (plane_wave \zeta k x) * conj (plane_wave \zeta k' x) = if k = k' then (L : Complex) else 0 := sorry
 \end{lstlisting}
 
