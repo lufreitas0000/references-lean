@@ -1,7 +1,7 @@
 id = "A1"
 model = "gemini-3.1-pro"
-max_turns = 45
-max_cost_brl = 8.0
+max_turns = 60
+max_cost_brl = 15.0
 write = ["scripts/anti_cheat.sh", "scripts/selftest_guards.sh", "scripts/axiom_audit.sh", "scripts/lock_statements.py",
          "Bosonize/Audit/AxiomAudit.lean", "Bosonize/Audit/AxiomCheck.lean", "Bosonize/Audit/LockDump.lean",
          "tests/canary/bad/*", "tests/canary/good/*", "docs/GUARDS.md"]

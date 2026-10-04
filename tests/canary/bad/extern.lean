@@ -1,0 +1,1 @@
+@[extern "x"] def y : Nat := 0

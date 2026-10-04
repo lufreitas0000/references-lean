@@ -1,0 +1,1 @@
+noncomputable def real_fn : Real := 3.14

@@ -1,0 +1,1 @@
+def myDummy : Nat := 1

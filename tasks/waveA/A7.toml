@@ -1,7 +1,7 @@
 id = "A7"
 model = "gemini-3.1-pro"
 max_turns = 25
-max_cost_brl = 1.5
+max_cost_brl = 15.0
 write = ["scripts/status.py", "phase01.md"]
 read = ["scripts/accept/A7.sh"]
 accept = "bash scripts/accept/A7.sh"

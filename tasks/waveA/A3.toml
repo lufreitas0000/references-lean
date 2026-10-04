@@ -1,9 +1,9 @@
 id = "A3"
-model = "gemini-3.8-flash"
+model = "gemini-3.1-pro"
 escalate_model = "gemini-3.1-pro"
 escalate_after = 20
 max_turns = 45
-max_cost_brl = 3.0
+max_cost_brl = 10.0
 write = ["oracle/tests/*.py", "oracle/src/*.py", "oracle/src/**/*.py", "oracle/mutants/*.py", "oracle/conftest.py", "oracle/README.md"]
 read = ["start_draft/probe_ccr_window.py", "start_draft/probe_sign_energy_sugawara.py", "oracle/pyproject.toml", "scripts/accept/A3.sh"]
 accept = "bash scripts/accept/A3.sh"

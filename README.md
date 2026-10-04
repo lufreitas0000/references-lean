@@ -109,6 +109,7 @@ cd notes/tex && latexmk -pdf main.tex
 5. **Notation contract.** ASCII machine layer for specs; typed indices (`Site`, `Mode`,
    `BosonIdx`, `Chirality`) in Lean.
 6. **Human gates.** Each phase ends with a short gate packet reviewed by the human.
+7. **Workspace Organization.** Agents must *never* create temporary test/scratch files in the main project directory. All scratch tests must be routed to `../tmp/` and cleaned up afterwards to preserve git sync. See `.agents` rules.
 
 ## 7. Tooling
 
@@ -124,3 +125,16 @@ E. Miranda, *Introduction to Bosonization*, Braz. J. Phys. 33 (2003) — PDF in
 Umbral calculus on lattices: Dimakis–Müller-Hoissen–Striker (1996); Levi–Tempesta–Winternitz (2004).
 Lattice AQFT / CAR nets: Bratteli–Robinson vol. 2; Araki's lattice CAR algebra.
 
+
+## 8. Multi-Agent Architecture (Dual-Directional)
+
+To prevent LLM drift, hallucinations, and "green-washing" (satisfying the Lean compiler with trivial stubs like `0` or `⊥`), this project utilizes a structured multi-agent workflow heavily enforcing Top-Down design and Bottom-Up construction:
+
+- **Yellow Agent (Top-Down Architect):** Defines high-level interfaces, breaks theorems into atomic lemmas, and maintains strict dependency inversion.
+- **Blue Agent (Bottom-Up Constructor):** The tactical Lean 4 prover. Works strictly on atomic lemmas iteratively without overarching context to prevent cheating.
+- **Red Agent (Adversarial Validator):** Audits Blue's work, executing mutation tests and anti-triviality scripts to ensure operators are mathematically non-vacuous.
+- **Purple Agent (Integrator / Feedback Loop):** Analyzes failures and prompts refactoring directives between Blue and Yellow.
+
+These agent roles are defined in `docs/agents/` and are dynamically injected into the system prompt by `scripts/gworker.py` based on the `team_class` key in their TOML task cards.
+
+*See `docs/Phase1_Implementation_Report.md` and `docs/Phase2_Dual_Architecture_Plan.md` for the rigorous execution strategies used by these agents.*

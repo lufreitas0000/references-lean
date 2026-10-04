@@ -204,7 +204,15 @@ class Worker:
                 ctx.append(f"=== {rel} ===\n{trunc(p.read_text(), 20000)}")
         user = (f"TASK {self.id}\n\nGOAL:\n{self.card['goal']}\n\nALLOWED WRITES: {self.card.get('write')}\n"
                 f"ACCEPTANCE COMMAND (run by finish): {self.card['accept']}\n\nCONTEXT FILES:\n" + "\n\n".join(ctx))
-        return [{"role": "system", "content": SYSTEM}, {"role": "user", "content": user}]
+        
+        system_content = SYSTEM
+        team_class = self.card.get("team_class")
+        if team_class:
+            agent_file = ROOT / "docs" / "agents" / f"{team_class}.md"
+            if agent_file.exists():
+                system_content = agent_file.read_text() + "\n\n" + SYSTEM
+                
+        return [{"role": "system", "content": system_content}, {"role": "user", "content": user}]
 
     def log(self, obj):
         self.transcript.write(json.dumps(obj)[:20000] + "\n")

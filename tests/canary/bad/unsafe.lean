@@ -1,0 +1,1 @@
+unsafe def x : Nat := 0

@@ -1,0 +1,15 @@
+<rule>
+  <description>Workspace Organization and Temporary Files</description>
+  <instruction>
+  - NEVER create temporary test files, scratch pads, or intermediate scripts in the root directory (`/home/lucas/Projects/latex_notes/qed3-duality/references-lean/`).
+  - All temporary files must be created in `/home/lucas/Projects/latex_notes/qed3-duality/tmp/` (outside the main lean project).
+  - Clean up temporary files in the `tmp` directory after your task is complete.
+  - Maintain a clean git working tree by ensuring only project-relevant source files are kept in the main directories.
+  </instruction>
+</rule>
+<rule>
+  <description>LaTeX Compilation and Artifacts</description>
+  <instruction>
+  - When creating or updating LaTeX notes/proposals in `notes/tex/`, compile them and place a copy of the output `.pdf` directly into the project root (`references-lean/`) so the user can easily check the output for each phase.
+  </instruction>
+</rule>

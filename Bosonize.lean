@@ -10,3 +10,13 @@ import Bosonize.Core.Budget
 import Bosonize.Core.BosonFock
 import Bosonize.Core.Params
 import Bosonize.Audit.AxiomCheck
+import Bosonize.Stubs.Lattice
+import Bosonize.Stubs.Umbral
+import Bosonize.Stubs.Fourier
+import Bosonize.Stubs.CAR
+import Bosonize.Stubs.Net
+import Bosonize.Stubs.LatticeFermion
+import Bosonize.Stubs.Vacuum
+import Bosonize.Stubs.Budget
+import Bosonize.Stubs.BosonFock
+import Bosonize.Stubs.Params

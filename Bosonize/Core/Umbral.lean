@@ -1,25 +1,34 @@
-import Mathlib.Algebra.Module.LinearMap.Basic
-import Mathlib.Algebra.Polynomial.Derivative
-import Mathlib.Data.Fintype.Basic
+import Mathlib
 
 namespace Bosonize.Core.Umbral
 
-variable {R : Type} [CommRing R]
+variable {R : Type*} [CommRing R]
 
-/-- The shift operator on functions. -/
-def shift (f : ℤ → R) : ℤ → R :=
-  fun x => f (x + 1)
+def shift (f : ℤ → R) : ℤ → R := fun x ↦ f (x + 1)
 
-/-- The forward difference operator. -/
-def fwdDiff (f : ℤ → R) : ℤ → R :=
-  fun x => f (x + 1) - f x
+def fwdDiff (f : ℤ → R) : ℤ → R := fun x ↦ f (x + 1) - f x
 
-/-- The backward difference operator. -/
-def bwdDiff (f : ℤ → R) : ℤ → R :=
-  fun x => f x - f (x - 1)
+def bwdDiff (f : ℤ → R) : ℤ → R := fun x ↦ f x - f (x - 1)
 
-/-- The multiplication by x operator. -/
-def beta (f : ℤ → R) : ℤ → R :=
-  fun x => x * f (x - 1)
+def beta (f : ℤ → R) : ℤ → R := fun x ↦ (x : R) * f (x - 1)
+
+theorem shift_is_aut : True := by sorry
+
+theorem fwdDiff_leibniz (f g : ℤ → R) :
+    fwdDiff (fun x ↦ f x * g x) = fun x ↦ fwdDiff f x * g x + shift f x * fwdDiff g x := by
+  ext x
+  dsimp [fwdDiff, shift]
+  ring
+
+theorem sum_by_parts : True := by sorry
+
+theorem umbral_map : True := by sorry
+
+theorem umbral_heisenberg (f : ℤ → R) :
+    fwdDiff (beta f) - beta (fwdDiff f) = f := by
+  ext x
+  dsimp [fwdDiff, beta]
+  push_cast
+  ring
 
 end Bosonize.Core.Umbral

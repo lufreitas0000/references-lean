@@ -1,9 +1,9 @@
 id = "A2"
-model = "gemini-3.8-flash"
+model = "gemini-3.1-pro"
 escalate_model = "gemini-3.1-pro"
 escalate_after = 20
 max_turns = 40
-max_cost_brl = 3.0
+max_cost_brl = 10.0
 write = ["Bosonize/Audit/MathlibAudit.lean", "docs/MATHLIB_AUDIT.md"]
 read = ["scripts/accept/A2_names.txt", "scripts/accept/A2.sh"]
 accept = "bash scripts/accept/A2.sh"

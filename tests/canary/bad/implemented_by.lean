@@ -1,0 +1,1 @@
+@[implemented_by x] def y : Nat := 0

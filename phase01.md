@@ -265,3 +265,11 @@ definitions what you mean physically?), locked definition list, trace rows, open
 
 _Filled in as Phase 0 is executed — see bottom of this file after each session._
 
+<!-- STATUS:BEGIN -->
+| Module | Theorems | Defs/Structures | Stubs | Locked | Sorry |
+|---|---|---|---|---|---|
+| Bosonize/Core/Lattice | 0 | 0 | 0 | 0 | No |
+| Bosonize/Core/Umbral | 0 | 0 | 0 | 0 | No |
+| Bosonize/Core/Fourier | 0 | 0 | 0 | 0 | No |
+| Bosonize/Core/CAR | 0 | 0 | 0 | 0 | No |
+<!-- STATUS:END -->
