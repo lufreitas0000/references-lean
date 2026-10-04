@@ -1,0 +1,32 @@
+id = "A3"
+model = "gemini-3.8-flash"
+escalate_model = "gemini-3.1-pro"
+escalate_after = 20
+max_turns = 45
+max_cost_brl = 3.0
+write = ["oracle/tests/*.py", "oracle/src/*.py", "oracle/src/**/*.py", "oracle/mutants/*.py", "oracle/conftest.py", "oracle/README.md"]
+read = ["start_draft/probe_ccr_window.py", "start_draft/probe_sign_energy_sugawara.py", "oracle/pyproject.toml", "scripts/accept/A3.sh"]
+accept = "bash scripts/accept/A3.sh"
+goal = '''
+Turn the numerical oracle into a real pytest suite (currently 0 tests run).
+1. oracle/src/fock.py: reusable sparse Jordan–Wigner Fock construction for modes n in the centred band
+   -L/2 < n <= L/2 (c, cdag, number ops, rho(m), vacuum = all n<=0 filled, N, P, e = P - N(N+1)/2).
+   oracle/src/umbral.py: shift E, forward/backward differences, beta f(x) = x f(x-1), falling factorial,
+   umbral map X^n -> falling factorial (sympy).
+2. Delete/replace oracle/tests/test_seed_*.py (they are plain scripts) with real tests with asserts:
+   - test_car.py: CAR relations for L=4,6 (all pairs).
+   - test_energy.py: e(S) >= 0 for all basis states (L<=10), e=0 iff sector ground state, deep hole at depth d has e=d.
+   - test_ccr_window.py: [rho(-m), rho(m)] = m (sign per the probe) on budget subspaces satisfying the window, and its failure outside.
+   - test_sugawara.py: P - N(N+1)/2 = sum_m m b_m^dag b_m on the budget (as in the probe).
+   - test_fourier.py: orthogonality sum_x zeta^((k-k')x) = L delta; Delta e_k = (zeta^k - 1) e_k; DFT unitary.
+   - test_umbral.py (sympy, exact): discrete Leibniz Delta(fg) = Delta f g + E f Delta g; summation by parts on Z_L;
+     telescoping; Delta x^(n falling) = n x^(n-1 falling); umbral map intertwines d/dx and Delta; [Delta, beta] = 1
+     on random polynomials / functions on Z; Newton series E^n = sum C(n,k) Delta^k.
+   - test_bosonfock.py (sympy): on polynomials in X_1..X_3, [d_m, X_m'] = delta, Euler operator = degree.
+   At least 15 passing tests total.
+3. oracle/mutants/: >= 5 mutant variants (e.g. wrong Leibniz with f instead of Ef, wrong CCR sign, vacuum
+   with n<0 filled, missing Schwinger term, wrong Fourier sign) each as a module exposing `check()` that
+   returns True if the (wrong) identity holds. mutants/run_mutants.py imports each and exits 1 if any
+   mutant's check() returns True (i.e. the oracle must kill all mutants), printing a table.
+Run with: cd oracle && uv run pytest -q.
+'''

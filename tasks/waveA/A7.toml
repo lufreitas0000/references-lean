@@ -1,0 +1,17 @@
+id = "A7"
+model = "gemini-3.8-flash"
+max_turns = 25
+max_cost_brl = 1.5
+write = ["scripts/status.py", "phase01.md"]
+read = ["scripts/accept/A7.sh"]
+accept = "bash scripts/accept/A7.sh"
+goal = '''
+Write scripts/status.py (stdlib only) that prints an honest Markdown status table of the Lean library and
+updates phase01.md between the markers <!-- STATUS:BEGIN --> and <!-- STATUS:END --> (append the markers
+under the existing "## Status log" heading at the end of phase01.md if missing; do NOT modify anything else
+in phase01.md — read it first and rewrite it identically except for the marked block).
+Table: one row per Bosonize/Core/*.lean module: number of theorems/lemmas, number of defs/structures,
+number of corresponding stub statements in Bosonize/Stubs (same module name), number of locked names
+in docs/statement_lock.json (if present), and whether `sorry` appears. Header must contain the word "theorems".
+Also print totals and the result of the last oracle run if logs/oracle_last.txt exists.
+'''

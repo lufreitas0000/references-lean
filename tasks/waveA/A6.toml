@@ -1,0 +1,24 @@
+id = "A6"
+model = "gemini-3.8-flash"
+escalate_model = "gemini-3.1-pro"
+escalate_after = 25
+max_turns = 40
+max_cost_brl = 3.0
+write = ["docs/MIRANDA_REGISTRY.csv", "docs/WATCHLIST.md"]
+read = ["scripts/accept/A6.sh"]
+accept = "bash scripts/accept/A6.sh"
+goal = '''
+1. Build docs/MIRANDA_REGISTRY.csv from the OCR transcripts ../references-transcripts/miranda_2003/
+   (miranda_1-8.md, miranda_9-15.md, miranda_16-18.md; read them in chunks with read_file start/end —
+   note: these paths are outside the repo, so use `shell` with `head`/`cat` is not allowed for outside paths;
+   instead use `shell` with cmd `python3 scripts/read_external.py <file> <start> <end>`).
+   Columns: miranda_id,section,equation_label,transcript_file,latex,status,phase,notes
+   One row per numbered equation (and important unnumbered ones). miranda_id = MIR-001, MIR-002, ...
+   status: UNSEEN for all, except SUSPECT if the OCR is visibly garbled, OUT-OF-SCOPE for spin/higher-dim material.
+   phase: P1 for §II–IV and App. A.1; P2 §V–VI, X; P3 §VII–IX, XI, XII, App. B–C; P4 §X–XI, XIII; P5 §XIV.1, App. D; P6 §XIV.2.
+   Quote LaTeX with CSV quoting (use python csv semantics: double quotes, doubled inner quotes).
+2. docs/WATCHLIST.md: entries `## W-01 ...` .. at least `## W-16` from the earlier draft's watchlist
+   (search start_draft/master_roadmap_part*.md for "W-0" / "Watchlist" / "Appendix B" with grep via shell
+   `grep -n "W-" start_draft/master_roadmap_part1.md` etc.). Each: Miranda location, suspected issue, how the
+   oracle/Lean will decide, status OPEN.
+'''

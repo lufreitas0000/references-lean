@@ -1,0 +1,24 @@
+id = "A5"
+model = "gemini-3.1-pro"
+max_turns = 30
+max_cost_brl = 6.0
+write = ["docs/spec/P1/*.md"]
+read = ["phase01.md", "docs/NOTATION.md", "scripts/notation_lint.py", "scripts/accept/A5.sh"]
+accept = "bash scripts/accept/A5.sh"
+goal = '''
+Write the Phase-1 specifications docs/spec/P1/S1.k-<slug>.md for k = 1..10 matching steps 1.1–1.10 of
+phase01.md (Lattice, Umbral, Fourier, CAR, Net, LatticeFermion, Vacuum, Budget, BosonFock, Params).
+Each spec has sections:
+  ## Human layer — precise math statements of every definition and theorem of that step (LaTeX).
+  ## Machine layer — a ```spec fenced block in the ASCII grammar of docs/NOTATION.md (no '^' — use pow(x,n);
+     dag(A); nord(...); explicit quantifiers and hypotheses, ℕ-subtraction-free).
+  ## Lean names — proposed Lean declaration names `Bosonize.Core.<Module>.<name>` with intended Lean types
+     (sketch), carrier types and hypotheses (`[NeZero L]`, `Even L` as `2*h = L`, etc.).
+  ## Oracle — which oracle test checks it (oracle/tests/test_*.py) or "symbolic only".
+  ## Hazards — junk values, sign conventions, wrap-around, decidability, universe issues.
+Keep each theorem statement TRUE as written (double check small cases mentally, e.g. L = 4).
+Important corrections to respect: Mode L is the ℤ-subtype {n | -L < 2n ∧ 2n ≤ L} (centred band), NOT ZMod L;
+umbral Heisenberg pair (Δ∘β − β∘Δ = 1) holds on functions ℤ → R with (β f)(x) = x·f(x−1);
+CARRep must include the anticommutation relations as fields.
+Old files docs/spec/S1.k.md are placeholders; ignore them.
+'''

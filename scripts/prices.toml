@@ -1,0 +1,10 @@
+# ESTIMATES used only for the harness cost caps. Verify against AI Studio billing after Wave A
+# and correct these numbers (USD per 1M tokens).
+[fx]
+brl_per_usd = 5.6
+["gemini-3.8-flash"]
+usd_in_per_m = 0.50
+usd_out_per_m = 3.00
+["gemini-3.1-pro"]
+usd_in_per_m = 2.00
+usd_out_per_m = 12.00

@@ -1,0 +1,22 @@
+id = "A4"
+model = "gemini-3.1-pro"
+max_turns = 25
+max_cost_brl = 5.0
+write = ["docs/adr/ADR-*.md"]
+read = ["phase01.md", "roadmap_v1.0.0.md", "scripts/accept/A4.sh"]
+accept = "bash scripts/accept/A4.sh"
+goal = '''
+Write the architecture decision records (currently placeholders) in docs/adr/ADR-0001.md ... ADR-0012.md,
+following the ADR table in phase01.md §0.9 (ADR n = row n). Read start_draft/master_roadmap_part*.md
+(use read_file with ranges; search for "ADR") for the earlier rationale.
+- ADR-0001 (Fock representation), ADR-0005 (boson algebra layer: umbral polynomial Fock rep on
+  MvPolynomial with pderiv), ADR-0011 (umbral layer), ADR-0012 (AQFT net encoding): full ADRs with sections
+  `## Context`, `## Options`, `## Decision`, `## Attacks` (>= 3 numbered concrete attacks on the decision,
+  each with a response), `## Rollback`, `## Consequences for Lean`. >= 300 words each. Be concrete about Lean
+  types (e.g. `Finset ι → ℂ`, `Module.End ℂ V`, `StarSubalgebra`, `Algebra.adjoin`) and mention which
+  Mathlib names must be confirmed by the Mathlib audit.
+- The other ADRs: short (Context / Decision / Consequences), 80-200 words, no placeholder text.
+Mathematical facts to respect: no finite-dimensional rep of [A,B]=1 in char 0 (trace argument) — this is
+why bosonic CCR only holds on budget windows (fermionic side) or on infinite-dimensional polynomial modules
+(algebraic side, no analysis).
+'''

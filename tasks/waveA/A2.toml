@@ -1,0 +1,22 @@
+id = "A2"
+model = "gemini-3.8-flash"
+escalate_model = "gemini-3.1-pro"
+escalate_after = 20
+max_turns = 40
+max_cost_brl = 3.0
+write = ["Bosonize/Audit/MathlibAudit.lean", "docs/MATHLIB_AUDIT.md"]
+read = ["scripts/accept/A2_names.txt", "scripts/accept/A2.sh"]
+accept = "bash scripts/accept/A2.sh"
+goal = '''
+Produce an HONEST audit of the Mathlib names the project needs (list in scripts/accept/A2_names.txt).
+1. Write Bosonize/Audit/MathlibAudit.lean: `import Mathlib` is too slow? It is fine to use `import Mathlib`
+   (prebuilt oleans). For every name: a line `#check @Name` if it exists. If it does not exist, find the
+   current name with grep_mathlib (renames are common: e.g. Finset.sum_range_by_parts may be
+   `Finset.sum_range_by_parts` or live under `Finset.sum_Ico_by_parts`) and write
+   `-- RENAMED: OldName -> #check @NewName`, or `-- MISSING: Name` if nothing equivalent exists.
+   The file must compile with `lake env lean` (no errors).
+2. Write docs/MATHLIB_AUDIT.md: a table | Area | Name | Status | Actual name / signature (abridged) | Module |
+   with Status in {FOUND, RENAMED, MISSING}. Every name of the list must appear. Add at the end a short
+   section "Implications for Phase 1" (e.g. which gaps we must build ourselves).
+Do not write the word "Verified".
+'''

@@ -1,0 +1,52 @@
+id = "A1"
+model = "gemini-3.1-pro"
+max_turns = 45
+max_cost_brl = 8.0
+write = ["scripts/anti_cheat.sh", "scripts/selftest_guards.sh", "scripts/axiom_audit.sh", "scripts/lock_statements.py",
+         "Bosonize/Audit/AxiomAudit.lean", "Bosonize/Audit/AxiomCheck.lean", "Bosonize/Audit/LockDump.lean",
+         "tests/canary/bad/*", "tests/canary/good/*", "docs/GUARDS.md"]
+read = ["scripts/anti_cheat.sh", "scripts/selftest_guards.sh", "Bosonize/Audit/AxiomCheck.lean", "lakefile.toml", "scripts/accept/A1.sh"]
+accept = "bash scripts/accept/A1.sh"
+goal = '''
+Build REAL anti-cheat guards for the Lean library (current ones are placeholders).
+
+1. scripts/anti_cheat.sh [DIR] (default Bosonize/Core): fail (exit 1, print file:line) on any of:
+   sorry, admit, axiom declarations, native_decide, opaque, unsafe, implemented_by, extern, @[csimp],
+   set_option maxHeartbeats / maxRecDepth, Filter.Tendsto, tsum or ∑', ∫, `deriv`, MeasureTheory;
+   and on `import Bosonize.Stubs` / `import Bosonize.Continuum`. Must ignore occurrences inside
+   comments (-- line comments and /- -/ block comments, incl. docstrings). Use a small python
+   helper embedded or a sed comment-stripper; avoid false positives such as the word "opaque" inside
+   a docstring. Note: `noncomputable` is ALLOWED. Exit 0 on an empty/clean dir.
+2. Bosonize/Audit/AxiomAudit.lean: a Lean meta-program providing a command `#audit_axioms <prefix>`
+   that iterates over all constants in the environment whose name starts with the given namespace
+   prefix (e.g. `Bosonize.Core`), uses `Lean.collectAxioms`, prints `name: [axioms]`, and throws an
+   error if any axiom outside {propext, Classical.choice, Quot.sound} occurs. Then a file section (or
+   separate file Bosonize/Audit/AxiomCheck.lean) importing `Bosonize` and running
+   `#audit_axioms Bosonize.Core`. Replace the placeholder AxiomCheck.lean.
+   scripts/axiom_audit.sh: runs `lake build` then `lake env lean Bosonize/Audit/AxiomCheck.lean`; exit nonzero on failure.
+3. scripts/lock_statements.py:
+   --write : for every `theorem`/`lemma`/`def` name declared in Bosonize/Stubs/**/*.lean, obtain the
+             fully elaborated type (via a generated Lean file using `#eval`/`#print` with pp.all, or a
+             meta command in Bosonize/Audit/LockDump.lean), store sha256 of the pretty-printed type
+             in docs/statement_lock.json keyed by the name with `Stubs` replaced by `Core`
+             (convention: Bosonize.Stubs.X.foo ↔ Bosonize.Core.X.foo).
+   --check : recompute the hashes for the Core counterparts; fail if any is missing or differs.
+   --selftest : build a temporary scenario under /tmp or tests/canary (stub statement vs weakened
+             core statement, e.g. adds a hypothesis) and verify --check detects it, and that an
+             identical statement passes. Must exit 0 only if detection works. If there are no Stubs
+             yet, --check must succeed trivially.
+4. Canaries: tests/canary/bad/ >= 12 small .lean files, one per banned construct (sorry, admit, axiom,
+   native_decide, opaque, unsafe, implemented_by, extern, maxHeartbeats, Tendsto, tsum,
+   MeasureTheory, import of Stubs), plus `axiom_hidden.lean` (namespace Bosonize.Core, declares an
+   axiom and a theorem using it — written so that the TEXT grep is evaded, e.g. via a macro or
+   `attribute`, is not required; it suffices that the axiom audit catches it) and a `lock_*.lean`
+   case used by the lock selftest. tests/canary/good/ >= 2 clean files (one using noncomputable and
+   a docstring containing the word "opaque").
+5. scripts/selftest_guards.sh: for each bad canary, copy it into a temp dir structured like
+   Bosonize/Core and run anti_cheat.sh on it -> must FAIL (except axiom_hidden / lock_* which are
+   handled by the axiom audit / lock selftest: for axiom_hidden compile it with `lake env lean` together
+   with the audit command and require the audit to report the axiom). Each good canary -> must PASS.
+   Print a table; exit 0 iff all expectations hold. No hard-coded "OK".
+6. docs/GUARDS.md: short description of each guard and how to run it.
+Run scripts/accept/A1.sh logic via finish when ready.
+'''
