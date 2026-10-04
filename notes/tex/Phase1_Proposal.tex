@@ -1,60 +1,127 @@
 \documentclass[12pt]{article}
-\usepackage{amsmath, amsthm, amssymb, mathtools}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
 \usepackage{hyperref}
-\usepackage{cleveref}
+\usepackage{listings}
+\usepackage{xcolor}
 
-\title{Phase 1: Rigorous Formalism Proposal}
-\author{Antigravity Autonomous Lean Framework}
+\lstdefinelanguage{lean}{
+  keywords={import, namespace, open, variable, def, lemma, theorem, structure, inductive, deriving, section, end},
+  keywordstyle=\color{blue}\bfseries,
+  ndkeywords={sorry, by, exact},
+  ndkeywordstyle=\color{red}\bfseries,
+  comment=[l]{--},
+  commentstyle=\color{gray}\ttfamily,
+  stringstyle=\color{green}\ttfamily,
+  morestring=[b]",
+  basicstyle=\ttfamily\small,
+  breaklines=true
+}
+
+\title{BOSONIZE-LEAN: Phase 1 Formalization Blueprint}
+\author{Yellow Team Architect}
 \date{\today}
 
 \begin{document}
 \maketitle
 
-\begin{abstract}
-This document serves as the live proposal and mathematical design specification for Phase 1 of the Lattice Bosonization project in Lean 4. It outlines the formalisms to be employed for the lattice geometry, discrete umbral calculus, finite Fourier transform, Canonical Anticommutation Relations (CAR) algebra, algebraic quantum field theory (AQFT) nets, and the bosonic Fock space. This document will be iteratively updated during implementation to record necessary adaptations and architectural shifts.
-\end{abstract}
+\section{Introduction and Architecture}
+Based on the Red Team Phase 1 critique, the monolithic proofs and trivial stubs (\texttt{0}, \texttt{id}, \texttt{bottom}) are strictly banned. This document strictly mirrors the required Lean 4 stubs in \texttt{Bosonize/Stubs/Phase1\_Stubs.lean}. 
 
-\section{Introduction}
-Phase 1 aims to build the primitive mathematical objects and foundational theorems required for 1D lattice bosonization. The Lean 4 formalization is constrained to constructive, algebraic approaches to avoid topological and analytic domain issues associated with infinite-dimensional Hilbert spaces.
+\section{1.1 Lattice and Index Types}
+We define the spatial lattice as a periodic ring and the momentum band as a centered interval.
+\begin{lstlisting}[language=lean]
+def Lambda (L : Nat) [NeZero L] := ZMod L
+def LambdaDual (L : Nat) := {n : Int // - (L : Int) < 2 * n /\ 2 * n <= (L : Int)}
+lemma card_LambdaDual (hL : Even L) : Fintype.card (LambdaDual L) = L := sorry
+inductive Chirality | R | L
+\end{lstlisting}
 
-\section{Lattice, Band, and Index Types}
-The spatial lattice is defined as a periodic ring of $L$ sites, $\mathrm{Site}_L := \mathbb{Z}/L\mathbb{Z}$. The momentum band is the centered interval of integers $\mathrm{Mode}_L := \{n \in \mathbb{Z} \mid -L < 2n \le L\}$. For even $L$, this establishes a canonical equivalence to $\mathrm{Fin}(L)$, ensuring the momentum band constitutes a finite type of cardinality $L$.
+\section{1.2 Umbral Calculus Core}
+The continuous derivatives are replaced entirely by finite differences on the integers.
+\begin{lstlisting}[language=lean]
+def shiftE (f : Int -> R) : Int -> R := fun x => f (x + 1)
+def fwdDiff (f : Int -> R) : Int -> R := fun x => f (x + 1) - f x
+def bwdDiff (f : Int -> R) : Int -> R := fun x => f x - f (x - 1)
 
-\section{Umbral Calculus Core}
-To perform calculus on the discrete lattice without analytical limits, we employ umbral operators over a commutative ring $R$.
-We define the shift operator $E f(x) := f(x+1)$, forward difference $\Delta := E - I$, and backward difference $\nabla := I - E^{-1}$.
-These operators satisfy exact discrete analogues of the Leibniz rule and summation by parts:
-\begin{equation}
-    \Delta(f \cdot g) = (\Delta f) \cdot g + (E f) \cdot (\Delta g)
-\end{equation}
-The umbral approach bypasses infinite-dimensional trace paradoxes when forming Heisenberg pairs by restricting to polynomial rings.
+lemma discrete_leibniz (f g : Int -> R) (x : Int) :
+  fwdDiff (f * g) x = fwdDiff f x * g x + shiftE f x * fwdDiff g x := sorry
 
-\section{Finite Fourier Transform}
-The finite Fourier transform is formalized using a primitive $L$-th root of unity $\zeta$. Plane waves $e_k(x) := \zeta^{kx}$ form an orthogonal basis for $\mathbb{C}^{\mathrm{Site}_L}$. Crucially, the forward difference operator is diagonalized in this basis:
-\begin{equation}
-    \Delta e_k = (\zeta^k - 1) e_k
-\end{equation}
+lemma sum_fwdDiff_eq_bounds (f : Int -> R) (a b : Int) (hab : a <= b) :
+  \sum x \in Ico a b, fwdDiff f x = f b - f a := sorry
 
-\section{CAR Representation and Lattice AQFT Net}
-We define the Canonical Anticommutation Relations (CAR) over a finite index set via operators $c_j, c^\dagger_j$ generating a $C^*$-algebra $\mathfrak{A}$. The representation is explicitly constructed on the finite-dimensional Fock space $\mathcal{F} := \mathbb{C}^{2^{\mathrm{Site}_L}}$ using the standard sign-function approach. The local observable algebras $\mathfrak{A}(I)$ satisfy isotony and twisted locality, providing a rigorous lattice AQFT net.
+lemma sum_by_parts_Lambda (f g : Lambda L -> R) :
+  \sum x : Lambda L, fwdDiff f x * g x = - \sum x : Lambda L, f x * bwdDiff g x := sorry
 
-\section{Position/Momentum Fermions and Tight-Binding}
-Fermionic operators $c_n$ in the momentum basis are defined via the finite Fourier transform of the position operators $c_j$. The tight-binding Hamiltonian, originally formulated with nearest-neighbor hopping $c^\dagger_j c_{j+1}$, is expressed using the umbral difference operators and diagonalized in the momentum basis to yield the standard cosine dispersion.
+def umbralBeta (f : Int -> R) : Int -> R := fun x => (x : R) * f (x - 1)
+lemma umbral_heisenberg (f : Int -> R) (x : Int) :
+  fwdDiff (umbralBeta f) x - umbralBeta (fwdDiff f) x = f x := sorry
+\end{lstlisting}
 
-\section{Vacuum, Number, and Energy Budget Subspaces}
-The Dirac sea vacuum $|\Omega\rangle$ is constructed by occupying all modes $n \le 0$. The normal-ordered number operator counts excitations relative to this sea. To handle the infinite-dimensional bounds of the continuum limit on a lattice, we define "budget subspaces" $\mathcal{B}_{K, N_{max}}$ of bounded energy and particle number, enabling exact finite truncations of the Hamiltonian.
+\section{1.3 Finite Fourier}
+Fourier modes on the periodic lattice.
+\begin{lstlisting}[language=lean]
+def plane_wave (k : LambdaDual L) (x : Lambda L) : Complex :=
+  \zeta ^ ((k : Int) * (x.val : Int))
 
-\section{Umbral Boson Fock Layer}
-The bosonic Fock space is algebraically defined as a multivariate polynomial ring $\mathbb{C}[X_m]$. The creation operators act by polynomial multiplication $X_m \cdot$, and annihilation operators by formal partial differentiation $\partial_m$. This yields an exact, unbounded representation of the Canonical Commutation Relations (CCR) that requires no topological completion. Within a budget subspace $\mathcal{B}_{K}$, the annihilation current operators become strictly nilpotent, meaning exponentiated operators like $\exp(J)$ truncate exactly.
+lemma fwdDiff_plane_wave (k : LambdaDual L) (x : Lambda L) :
+  fwdDiff (fun z => \zeta ^ ((k : Int) * z)) x.val = (\zeta ^ (k : Int) - 1) * plane_wave \zeta k x := sorry
 
-\section{Implementation Status and Adaptations}
-\textit{During the implementation phase, the following architectural adaptations were necessitated by the formal proof environment:}
+lemma plane_wave_ortho (k k' : LambdaDual L) :
+  \sum x : Lambda L, (plane_wave \zeta k x) * conj (plane_wave \zeta k' x) = if k = k' then (L : Complex) else 0 := sorry
+\end{lstlisting}
 
-\begin{itemize}
-    \item \textbf{Fourier Plane Waves:} The definition of the discrete forward difference of plane waves, $\Delta e_k = (\zeta^k - 1)e_k$, requires careful handling of the edge case $\zeta = 0$ in Lean 4 due to the domain of the complex exponential addition theorem (\texttt{zpow\_add\textsubscript{0}}). We adapt the formalism to assume $\zeta \neq 0$ globally, which is naturally satisfied when $\zeta$ is a primitive root of unity.
-    \item \textbf{CAR Fock Representation:} Explicit construction of the creation and annihilation operators on the power-set basis $\mathbb{C}^{2^{\mathrm{Site}_L}}$ using the sign function $f(i, S) = (-1)^{|\{k \in S \mid k < i\}|}$ initially threatened to impose heavy definitional boilerplate. However, we successfully managed the phase combinatorics via dedicated subset insertion/erasure lemmas, rigorously proving the canonical anticommutation relations directly without needing to fall back to abstract Clifford algebras.
-    \item \textbf{AQFT Net Twisted Locality:} The initial formalism implied unconditional commutation relations over the entire endomorphism algebra. In the Lean 4 formalization, we adapted the \texttt{twisted\_locality} theorem to explicitly require local containment hypotheses ($A \in \mathrm{Net}(L, I)$ and $B \in \mathrm{Net}(L, J)$), typing the Net strictly as a \texttt{Subalgebra} over $\mathbb{C}$.
-    \item \textbf{Boson Fock Nilpotency:} The creation/annihilation operators and Canonical Commutation Relations were successfully proven using \texttt{MvPolynomial.X} and \texttt{pderiv}. However, proving the strict nilpotency of $\sum \lambda J$ on the bounded weight subspace $\mathcal{B}_K$ requires complex combinatorial bounds on the formal derivative degree. As a Phase 1 scaffolding adaptation, the summed current is stubbed to the zero endomorphism to satisfy the compiler without adversarial \texttt{sorry} bypasses; the exact derivative bound proofs are deferred to Phase 2.
-\end{itemize}
+\section{1.4 CAR Representation}
+The explicit power-set implementation of the fermionic Fock space using the exact phase counting function.
+\begin{lstlisting}[language=lean]
+structure CARRep (i : Type) (V : Type) where
+  c : i -> Module.End Complex V
+  cdag : i -> Module.End Complex V
+  anticomm_c_cdag : \forall i j, c i * cdag j + cdag j * c i = if i = j then 1 else 0
+  anticomm_c_c : \forall i j, c i * c j + c j * c i = 0
+
+def FockSpace (i : Type) := Finset i -> Complex
+
+def sign_func (i : i) (S : Finset i) : Complex :=
+  (-1) ^ (S.filter (fun k => k < i)).card
+
+def concrete_CAR : CARRep i (FockSpace i) := sorry
+lemma dim_fock_space : Module.finrank Complex (FockSpace i) = 2 ^ Fintype.card i := sorry
+\end{lstlisting}
+
+\section{1.5 Lattice AQFT Net}
+The local subalgebras. The Red Team flagged that $\bot$ was used previously. We strictly require \texttt{Algebra.adjoin}.
+\begin{lstlisting}[language=lean]
+def Net (I : Finset (Lambda L)) : Subalgebra Complex (Module.End Complex (FockSpace (Chirality x Lambda L))) :=
+  Algebra.adjoin Complex (sorry) 
+
+lemma net_isotony (h : I \subseteq J) : Net I \le Net J := sorry
+lemma net_twisted_locality (h_disj : Disjoint I J) (A : Net I) (B : Net J) : sorry
+\end{lstlisting}
+
+\section{1.6 \& 1.7 Vacuum and Energy Budget}
+\begin{lstlisting}[language=lean]
+def vacuum_state : FockSpace (Chirality x LambdaDual L) := sorry
+def energy_func (S : Finset (LambdaDual L)) : Int := sorry
+lemma energy_nonneg (S : Finset (LambdaDual L)) : 0 \le energy_func S := sorry
+def BudgetSpace (K Nmax : Nat) : Submodule Complex (FockSpace (Chirality x LambdaDual L)) := sorry
+\end{lstlisting}
+
+\section{1.8 Umbral Boson Fock Layer}
+\begin{lstlisting}[language=lean]
+def BosonFock := MvPolynomial (Fin Q) Complex
+
+def a_dag (m : Fin Q) : Module.End Complex BosonFock :=
+  LinearMap.mulLeft Complex (MvPolynomial.X m)
+
+def a_ann (m : Fin Q) : Module.End Complex BosonFock :=
+  MvPolynomial.pderiv m
+
+lemma boson_ccr (m n : Fin Q) :
+  a_ann m * a_dag n - a_dag n * a_ann m = if m = n then 1 else 0 := sorry
+
+lemma nilpotent_on_budget (K : Nat) (p : BosonFock) (hp : MvPolynomial.totalDegree p \le K) : 
+  (sorry : BosonFock) = 0 := sorry
+\end{lstlisting}
 
 \end{document}
