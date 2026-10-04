@@ -2,10 +2,39 @@ import os
 import argparse
 import requests
 import json
+from pathlib import Path
 
-API_KEY = "AQ.Ab8RN6JZ3IWXI378tqZVs68Dq188Q-zS_vwbOeaUUP8OpSvAiw"
+def load_api_key():
+    """Load Gemini API key from environment variables or local .env file."""
+    # Check standard environment variables first
+    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    if key:
+        return key.strip()
+
+    # Fallback to local .env file at repo root or current working dir
+    for env_path in [
+        Path(__file__).resolve().parent.parent / ".env",
+        Path.cwd() / ".env"
+    ]:
+        if env_path.is_file():
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    if "=" in line:
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        v = v.strip().strip("\"'")
+                        if k in ("GEMINI_API_KEY", "GOOGLE_API_KEY") and v:
+                            return v
+
+    raise RuntimeError(
+        "Gemini API key not found. Please set GEMINI_API_KEY in your environment or in a local .env file."
+    )
 
 def generate_content(prompt, output_path, model="flash"):
+    api_key = load_api_key()
     print(f"Requesting generation from Gemini {model}...")
     
     payload = {
@@ -20,7 +49,7 @@ def generate_content(prompt, output_path, model="flash"):
     
     headers = {
         "Content-Type": "application/json",
-        "x-goog-api-key": API_KEY
+        "x-goog-api-key": api_key
     }
     
     model_name = "gemini-1.5-pro" if model == "pro" else "gemini-1.5-flash"
