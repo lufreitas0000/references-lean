@@ -18,3 +18,22 @@ venv/
 *.synctex.gz
 *.bbl
 *.blg
+
+# Logs and Transcripts (Large/Frequent files)
+logs/
+*.jsonl
+*.stdout
+
+# Temporary / Scratch Files
+tmp/
+scratch_*.lean
+scratch_*.txt
+scratch_*.md
+*~
+
+# Secrets & Environment
+.env
+.DS_Store
+
+# Compiled PDFs in source directory (leaving root PDFs alone if tracked)
+notes/tex/*.pdf
